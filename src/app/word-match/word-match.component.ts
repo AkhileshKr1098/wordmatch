@@ -17,8 +17,7 @@ interface Match {
   styleUrls: ['./word-match.component.css']
 })
 export class WordMatchComponent implements AfterViewInit {
-
-  originalWords = ['ball', 'sun', 'water', 'fly'];
+  originalWords = ['ball', 'sun', 'water', 'fly', 'elephant'];
   leftWords: any[] = [];
   rightWords: any[] = [];
 
@@ -43,26 +42,46 @@ export class WordMatchComponent implements AfterViewInit {
       .map(({ value }) => value);
   }
 
+  getRandomColor(): string {
+    const colors = ['#FFA07A', '#FFD700', '#90EE90', '#87CEFA', '#DDA0DD', '#F4A460', '#FF69B4'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
   resetWords() {
-    this.leftWords = this.shuffleArray(this.originalWords.map(word => ({ word })));
+    this.leftWords = this.shuffleArray(this.originalWords.map(word => ({
+      word,
+      color: this.getRandomColor()
+    })));
+
     this.rightWords = this.shuffleArray(this.originalWords.map(word => ({ word })));
+
     this.matchedPairs = [];
     this.usedLeftIndexes.clear();
     this.usedRightIndexes.clear();
+
+    setTimeout(() => {
+      document.querySelectorAll('.word-item[data-side="right"]').forEach(el => {
+        (el as HTMLElement).style.backgroundColor = '#f8f8f8';
+        (el as HTMLElement).style.color = '#000';
+
+      });
+    });
   }
 
   clearMatches() {
     this.matchedPairs = [];
     this.usedLeftIndexes.clear();
     this.usedRightIndexes.clear();
+
+    document.querySelectorAll('.word-item[data-side="right"]').forEach(el => {
+      (el as HTMLElement).style.backgroundColor = '#f8f8f8';
+    });
   }
 
-  // ✅ Updated method: returns edge anchor instead of center
   getElementAnchor(el: HTMLElement, side: 'left' | 'right'): Point {
     const rect = el.getBoundingClientRect();
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-
     return {
       x: side === 'left' ? rect.right + scrollX : rect.left + scrollX,
       y: rect.top + rect.height / 2 + scrollY
@@ -76,7 +95,7 @@ export class WordMatchComponent implements AfterViewInit {
     const index = Number(target.getAttribute('data-id'));
 
     if ((side === 'left' && this.usedLeftIndexes.has(index)) ||
-        (side === 'right' && this.usedRightIndexes.has(index))) {
+      (side === 'right' && this.usedRightIndexes.has(index))) {
       return;
     }
 
@@ -123,7 +142,7 @@ export class WordMatchComponent implements AfterViewInit {
 
       if (targetSide && targetSide !== this.selectedItem.side) {
         if ((targetSide === 'left' && this.usedLeftIndexes.has(targetIndex)) ||
-            (targetSide === 'right' && this.usedRightIndexes.has(targetIndex))) {
+          (targetSide === 'right' && this.usedRightIndexes.has(targetIndex))) {
           this.resetDrag();
           return;
         }
@@ -147,8 +166,16 @@ export class WordMatchComponent implements AfterViewInit {
           this.usedRightIndexes.add(selectedIndex);
           this.usedLeftIndexes.add(targetIndex);
         }
+        if (correct) {
+          target.style.backgroundColor = this.selectedItem.item.color;
+          target.style.color = '#000'; // reset to black
+        } else {
+          target.style.backgroundColor = '#f8d7da'; // red bg
+          target.style.color = '#d00000'; // red text
+        }
       }
     }
+
     this.resetDrag();
   }
 
@@ -156,4 +183,5 @@ export class WordMatchComponent implements AfterViewInit {
     this.isDragging = false;
     this.selectedItem = null;
   }
+
 }

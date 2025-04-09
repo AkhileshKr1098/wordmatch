@@ -3,13 +3,14 @@
      (mouseup)="onMouseUp($event)"
      (touchmove)="onTouchMove($event)"
      (touchend)="onTouchEnd($event)">
-  
+
   <svg class="svg-lines">
     <line *ngFor="let match of matchedPairs"
           [attr.x1]="match.start.x" [attr.y1]="match.start.y"
           [attr.x2]="match.end.x"   [attr.y2]="match.end.y"
           [attr.stroke]="match.correct ? 'green' : 'red'"
           stroke-width="4"></line>
+
     <line *ngIf="isDragging"
           [attr.x1]="dragLine.start.x" [attr.y1]="dragLine.start.y"
           [attr.x2]="dragLine.end.x"   [attr.y2]="dragLine.end.y"
@@ -20,6 +21,7 @@
     <div class="column left">
       <p *ngFor="let item of leftWords; let i = index"
          class="word-item"
+         [ngStyle]="{ 'background-color': item.color }"
          [class.used]="usedLeftIndexes.has(i)"
          data-side="left"
          [attr.data-id]="i"
