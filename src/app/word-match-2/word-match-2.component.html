@@ -1,0 +1,38 @@
+<div class="word-match-wrapper"
+     (mousemove)="onMouseMove($event)"
+     (mouseup)="onMouseUp($event)">
+  <svg class="svg-lines">
+    <!-- Draw finalized matches -->
+    <line *ngFor="let match of matchedPairs"
+          [attr.x1]="match.start.x" [attr.y1]="match.start.y"
+          [attr.x2]="match.end.x"   [attr.y2]="match.end.y"
+          [attr.stroke]="match.correct ? 'green' : 'red'"
+          stroke-width="4"></line>
+    <!-- Temporary dragging line -->
+    <line *ngIf="isDragging"
+          [attr.x1]="dragLine.start.x" [attr.y1]="dragLine.start.y"
+          [attr.x2]="dragLine.end.x"   [attr.y2]="dragLine.end.y"
+          stroke="yellow" stroke-width="4"></line>
+  </svg>
+
+  <div class="word-match-container">
+    <div class="column left">
+      <p *ngFor="let item of leftWords; let i = index"
+         class="word-item"
+         data-side="left"
+         data-id="{{i}}"
+         (mousedown)="startDrag(item, 'left', $event)">
+         {{ item.word }}
+      </p>
+    </div>
+    <div class="column right">
+      <p *ngFor="let item of rightWords; let i = index"
+         class="word-item"
+         data-side="right"
+         data-id="{{i}}"
+         (mousedown)="startDrag(item, 'right', $event)">
+         {{ item.word }}
+      </p>
+    </div>
+  </div>
+</div>
