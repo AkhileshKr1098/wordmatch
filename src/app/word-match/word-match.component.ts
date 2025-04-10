@@ -8,7 +8,11 @@ interface Point {
 interface Match {
   start: Point;
   end: Point;
-  correct: boolean;
+  correct?: boolean;
+  leftIndex: number;
+  rightIndex: number;
+  leftElement: HTMLElement;
+  rightElement: HTMLElement;
 }
 
 @Component({
@@ -27,9 +31,6 @@ export class WordMatchComponent implements AfterViewInit {
   dragLine = { start: { x: 0, y: 0 }, end: { x: 0, y: 0 } };
 
   selectedItem: { side: 'left' | 'right', item: any, element: HTMLElement } | null = null;
-
-  usedLeftIndexes = new Set<number>();
-  usedRightIndexes = new Set<number>();
 
   ngAfterViewInit() {
     this.resetWords();
@@ -52,29 +53,16 @@ export class WordMatchComponent implements AfterViewInit {
       word,
       color: this.getRandomColor()
     })));
-
     this.rightWords = this.shuffleArray(this.originalWords.map(word => ({ word })));
-
-    this.matchedPairs = [];
-    this.usedLeftIndexes.clear();
-    this.usedRightIndexes.clear();
-
-    setTimeout(() => {
-      document.querySelectorAll('.word-item[data-side="right"]').forEach(el => {
-        (el as HTMLElement).style.backgroundColor = '#f8f8f8';
-        (el as HTMLElement).style.color = '#000';
-
-      });
-    });
+    this.clearMatches();
   }
 
   clearMatches() {
     this.matchedPairs = [];
-    this.usedLeftIndexes.clear();
-    this.usedRightIndexes.clear();
 
-    document.querySelectorAll('.word-item[data-side="right"]').forEach(el => {
+    document.querySelectorAll('.word-item[data-side="left"], .word-item[data-side="right"]').forEach(el => {
       (el as HTMLElement).style.backgroundColor = '#f8f8f8';
+      (el as HTMLElement).style.color = '#000';
     });
   }
 
@@ -93,11 +81,6 @@ export class WordMatchComponent implements AfterViewInit {
 
     const target = event.currentTarget as HTMLElement;
     const index = Number(target.getAttribute('data-id'));
-
-    if ((side === 'left' && this.usedLeftIndexes.has(index)) ||
-      (side === 'right' && this.usedRightIndexes.has(index))) {
-      return;
-    }
 
     this.selectedItem = { side, item, element: target };
     this.isDragging = true;
@@ -136,52 +119,110 @@ export class WordMatchComponent implements AfterViewInit {
   }
 
   completeDrag(target: HTMLElement) {
-    if (this.isDragging && this.selectedItem && target && target.classList.contains('word-item')) {
-      const targetSide = target.getAttribute('data-side') as 'left' | 'right';
-      const targetIndex = Number(target.getAttribute('data-id'));
+    if (!this.isDragging || !this.selectedItem || !target || !target.classList.contains('word-item')) return;
+    this.playAudio('../../assets/linematchtime.wav')
 
-      if (targetSide && targetSide !== this.selectedItem.side) {
-        if ((targetSide === 'left' && this.usedLeftIndexes.has(targetIndex)) ||
-          (targetSide === 'right' && this.usedRightIndexes.has(targetIndex))) {
-          this.resetDrag();
-          return;
-        }
+    const selectedItem = this.selectedItem; // Narrowed type
 
-        const targetAnchor = this.getElementAnchor(target, targetSide);
-        const word1 = this.selectedItem.item.word.trim().toLowerCase();
-        const word2 = target.innerText.trim().toLowerCase();
-        const correct = word1 === word2;
+    const targetSide = target.getAttribute('data-side') as 'left' | 'right';
+    const targetIndex = Number(target.getAttribute('data-id'));
+    const selectedIndex = Number(selectedItem.element.getAttribute('data-id'));
 
-        this.matchedPairs.push({
-          start: { ...this.dragLine.start },
-          end: { ...targetAnchor },
-          correct
-        });
+    if (targetSide && targetSide !== selectedItem.side) {
+      this.matchedPairs = this.matchedPairs.filter(match =>
+        !(match.leftIndex === (selectedItem.side === 'left' ? selectedIndex : targetIndex) ||
+          match.rightIndex === (selectedItem.side === 'right' ? selectedIndex : targetIndex))
+      );
 
-        const selectedIndex = Number(this.selectedItem.element.getAttribute('data-id'));
-        if (this.selectedItem.side === 'left') {
-          this.usedLeftIndexes.add(selectedIndex);
-          this.usedRightIndexes.add(targetIndex);
-        } else {
-          this.usedRightIndexes.add(selectedIndex);
-          this.usedLeftIndexes.add(targetIndex);
-        }
-        if (correct) {
-          target.style.backgroundColor = this.selectedItem.item.color;
-          target.style.color = '#000'; // reset to black
-        } else {
-          target.style.backgroundColor = '#f8d7da'; // red bg
-          target.style.color = '#d00000'; // red text
-        }
-      }
+      const leftEl = selectedItem.side === 'left' ? selectedItem.element : target;
+      const rightEl = selectedItem.side === 'right' ? selectedItem.element : target;
+
+      this.matchedPairs.push({
+        start: this.getElementAnchor(leftEl, 'left'),
+        end: this.getElementAnchor(rightEl, 'right'),
+        leftIndex: selectedItem.side === 'left' ? selectedIndex : targetIndex,
+        rightIndex: selectedItem.side === 'right' ? selectedIndex : targetIndex,
+        leftElement: leftEl,
+        rightElement: rightEl
+      });
     }
 
     this.resetDrag();
   }
+
 
   resetDrag() {
     this.isDragging = false;
     this.selectedItem = null;
   }
 
+  isSave: boolean = false
+  TotalPercentage = 0
+  saveMatches(type: string) {
+    if (type === 'submit') {
+      this.isSave = false;
+
+      if (this.TotalPercentage === 100) {
+        alert('Excellent');
+      } else if (this.TotalPercentage > 75) {
+        alert('Awesome');
+      } else if (this.TotalPercentage > 50) {
+        alert('Good work');
+      } else if (this.TotalPercentage > 0) {
+        alert('Practice More');
+      } else {
+        alert('No correct matches. Try again!');
+      }
+    }
+    if (type == 'save') {
+      this.isSave = true
+      this.playAudio('../../assets/answersavetime.wav');
+
+      let correctCount = 0;
+      let incorrectCount = 0;
+
+      for (const match of this.matchedPairs) {
+        const leftWord = this.leftWords[match.leftIndex].word.trim().toLowerCase();
+        const rightWord = this.rightWords[match.rightIndex].word.trim().toLowerCase();
+        const correct = leftWord === rightWord;
+        match.correct = correct;
+
+        if (correct) {
+          correctCount++;
+          const color = this.leftWords[match.leftIndex].color;
+          match.leftElement.style.backgroundColor = '#affab0';
+          match.leftElement.style.color = '#000';
+          match.rightElement.style.backgroundColor = '#affab0';
+          match.rightElement.style.color = '#000';
+        } else {
+          incorrectCount++;
+          match.leftElement.style.backgroundColor = '#fcb1b1';
+          match.leftElement.style.color = '#000';
+          match.rightElement.style.backgroundColor = '#fcb1b1';
+          match.rightElement.style.color = '#000';
+        }
+      }
+
+      const total = correctCount + incorrectCount;
+      const percentage = total > 0 ? (correctCount / total) * 100 : 0;
+      this.TotalPercentage = percentage
+      // Log or display result
+      console.log(`Correct: ${correctCount}`);
+      console.log(`Incorrect: ${incorrectCount}`);
+      console.log(`Score: ${percentage.toFixed(2)}%`);
+
+      // Optional: Show to user
+      // alert(`You got ${correctCount} correct out of ${total}.\nScore: ${percentage.toFixed(2)}%`);
+    }
+  }
+
+
+
+
+  playAudio(url: string): void {
+    const audio = new Audio(url);
+    audio.play().catch(err => {
+      console.error('Failed to play audio:', err);
+    });
+  }
 }

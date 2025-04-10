@@ -44,11 +44,6 @@
   background-color: #f8f8f8;
 }
 
-.word-item.used {
-  pointer-events: none;
-  opacity: 0.6;
-}
-
 .button-bar {
   text-align: center;
   margin-top: 30px;
