@@ -1,4 +1,6 @@
 import { Component, AfterViewInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { ExcellentComponent } from '../excellent/excellent.component';
 
 interface Point {
   x: number;
@@ -31,6 +33,10 @@ export class WordMatchComponent implements AfterViewInit {
   dragLine = { start: { x: 0, y: 0 }, end: { x: 0, y: 0 } };
 
   selectedItem: { side: 'left' | 'right', item: any, element: HTMLElement } | null = null;
+
+  constructor(
+    private dialog: MatDialog
+  ) { }
 
   ngAfterViewInit() {
     this.resetWords();
@@ -163,7 +169,12 @@ export class WordMatchComponent implements AfterViewInit {
       this.isSave = false;
 
       if (this.TotalPercentage === 100) {
-        alert('Excellent');
+        // alert('Excellent');
+        this.dialog.open(ExcellentComponent, {
+          width: '100vw',
+          height: '100vh',
+          panelClass: 'full-screen-dialog'
+        });
       } else if (this.TotalPercentage > 75) {
         alert('Awesome');
       } else if (this.TotalPercentage > 50) {

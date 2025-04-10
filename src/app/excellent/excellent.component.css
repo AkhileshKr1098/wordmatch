@@ -1,0 +1,69 @@
+.celebration-dialog {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 40px;
+    box-sizing: border-box;
+    background-color: #222; /* fallback */
+    overflow: hidden;
+    border-radius: 20px;
+  }
+  
+  .celebration-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.7;
+    border-radius: 20px;
+  }
+  
+  .animated-text {
+    position: relative;
+    z-index: 2;
+    font-size: 64px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 20px #ffeb3b, 0 0 40px #ff5722, 0 0 60px #ff4081;
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow {
+    0% {
+      text-shadow: 0 0 10px #ffeb3b, 0 0 20px #ff5722, 0 0 30px #ff4081;
+    }
+    50% {
+      text-shadow: 0 0 20px #ffeb3b, 0 0 30px #ff5722, 0 0 40px #ff4081;
+    }
+    100% {
+      text-shadow: 0 0 10px #ffeb3b, 0 0 20px #ff5722, 0 0 30px #ff4081;
+    }
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #fff;
+    color: #ff4081;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .close-btn:hover {
+    background-color: #ffe0f0;
+    transform: scale(1.1);
+  }
+  
