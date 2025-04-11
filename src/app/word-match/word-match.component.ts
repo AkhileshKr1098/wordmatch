@@ -236,4 +236,13 @@ export class WordMatchComponent implements AfterViewInit {
       console.error('Failed to play audio:', err);
     });
   }
+
+
+  onCheck() {
+    this.dialog.open(ExcellentComponent, {
+      width: '100vw',
+      height: '100vh',
+      panelClass: 'full-screen-dialog'
+    });
+  }
 }

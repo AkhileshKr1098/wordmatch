@@ -5,7 +5,7 @@
     text-align: center;
     padding: 40px;
     box-sizing: border-box;
-    background-color: #222; /* fallback */
+    background-color: #fff; /* fallback */
     overflow: hidden;
     border-radius: 20px;
   }
@@ -58,7 +58,7 @@
     height: 40px;
     cursor: pointer;
     z-index: 3;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px #ffe0f0;
     transition: background-color 0.3s, transform 0.2s;
   }
   
